@@ -1,4 +1,4 @@
-import { settingsKey } from '../consts.js';
+import { settingsKey, wrapPlaceholder } from '../consts.js';
 import { showReplacementRuleDialog } from './replacementRuleDialog.js';
 import { icon } from './icon.js';
 import { ButtonType, iconButton } from './iconButton.js';
@@ -79,7 +79,7 @@ function createReplacementRuleCard(replacement, index, onEditButtonClick, onRemo
     const nodeTitleLabel = ruleFilter('node-title', replacement.nodeTitle, 'Node Title', 'martini-glass');
     const nodeClassLabel = ruleFilter('node-class', replacement.nodeClass, 'Node Class', 'code-commit');
     const inputNameLabel = ruleFilter('input-name', replacement.inputName, 'Input Name', 'code');
-    const placeholderLabel = ruleFilter('placeholder', `%${replacement.placeholder}%`, 'Placeholder', 'percent');
+    const placeholderLabel = ruleFilter('placeholder', wrapPlaceholder(replacement.placeholder), 'Placeholder', 'percent');
 
     const cardHeader = document.createElement('div');
     cardHeader.classList.add('flex-container');

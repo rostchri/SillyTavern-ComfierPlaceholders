@@ -1,4 +1,4 @@
-import { settingsKey, EXTENSION_NAME } from '../consts.js';
+import { settingsKey, EXTENSION_NAME, getPlaceholderDelimiter, wrapPlaceholder } from '../consts.js';
 import { addCustomPlaceholderToSD, getPlaceholderOptionValues } from './placeholders.js';
 
 /**
@@ -49,7 +49,7 @@ function parseWorkflow(workflowName, workflowJson) {
                 const rules = findMatchingRulesForNode(workflowName, nodeInfo, inputName);
                 if (rules.length > 0) {
                     const ph = rules[0].placeholder;
-                    nodeInfo.inputs[inputName].suggested = `%${ph}%`;
+                    nodeInfo.inputs[inputName].suggested = wrapPlaceholder(ph);
                 }
             }
         }
@@ -69,13 +69,16 @@ function parseWorkflow(workflowName, workflowJson) {
  * @returns {string} The modified workflow JSON
  */
 function replaceInputWithPlaceholder(workflowJson, nodeId, inputName, placeholder) {
-    console.log(`[${EXTENSION_NAME}]`, `Replacing input ${inputName} in node ${nodeId} with placeholder %${placeholder}%`);
-    const unperked = placeholder.replace(/%/g, '');
-    if (!unperked) {
+    const delimiter = getPlaceholderDelimiter();
+    const delimiterRegex = new RegExp(`[${delimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}]`, 'g');
+    const unwrapped = placeholder.replace(delimiterRegex, '');
+    if (!unwrapped) {
         throw new Error('Placeholder cannot be empty');
     }
-    if (unperked !== placeholder) {
-        console.log(`[${EXTENSION_NAME}]`, 'Removing % from placeholder:', placeholder, unperked);
+    const wrapped = wrapPlaceholder(unwrapped);
+    console.log(`[${EXTENSION_NAME}]`, `Replacing input ${inputName} in node ${nodeId} with placeholder ${wrapped}`);
+    if (unwrapped !== placeholder) {
+        console.log(`[${EXTENSION_NAME}]`, `Removing ${delimiter} from placeholder:`, placeholder, unwrapped);
     }
     // console.log(`[${EXTENSION_NAME}]`, 'Workflow JSON:', workflowJson);
     const workflow = JSON.parse(workflowJson);
@@ -83,7 +86,7 @@ function replaceInputWithPlaceholder(workflowJson, nodeId, inputName, placeholde
         throw new Error(`Input ${inputName} not found in node ${nodeId}`);
     }
 
-    workflow[nodeId].inputs[inputName] = `%${unperked}%`;
+    workflow[nodeId].inputs[inputName] = wrapped;
     return JSON.stringify(workflow, null, 2);
 }
 
@@ -94,7 +97,10 @@ function replaceInputWithPlaceholder(workflowJson, nodeId, inputName, placeholde
  */
 function findExistingPlaceholders(workflowJson) {
     const placeholders = new Set();
-    const placeholderRegex = /%([^%]+)%/g;
+    const delimiter = getPlaceholderDelimiter();
+    // Escape delimiter for regex if it's a special character
+    const escapedDelimiter = delimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const placeholderRegex = new RegExp(`${escapedDelimiter}([^${escapedDelimiter}]+)${escapedDelimiter}`, 'g');
     let match;
 
     while ((match = placeholderRegex.exec(workflowJson)) !== null) {

@@ -49,6 +49,34 @@ function renderExtensionSettings() {
     enabledCheckboxLabel.append(enabledCheckbox, enabledCheckboxText);
     inlineDrawerContent.append(enabledCheckboxLabel);
 
+    // Placeholder delimiter selector
+    const delimiterLabel = document.createElement('label');
+    delimiterLabel.classList.add('checkbox_label');
+    delimiterLabel.style.marginTop = '10px';
+    delimiterLabel.style.display = 'flex';
+    delimiterLabel.style.alignItems = 'center';
+    delimiterLabel.style.gap = '10px';
+    const delimiterText = document.createElement('span');
+    delimiterText.textContent = 'Placeholder delimiter:';
+    const delimiterSelect = document.createElement('select');
+    delimiterSelect.id = `${settingsKey}-delimiter`;
+    delimiterSelect.style.marginLeft = 'auto';
+    delimiterSelect.style.minWidth = '80px';
+    const optionPercent = document.createElement('option');
+    optionPercent.value = '%';
+    optionPercent.textContent = '%';
+    const optionStar = document.createElement('option');
+    optionStar.value = '*';
+    optionStar.textContent = '*';
+    delimiterSelect.append(optionPercent, optionStar);
+    delimiterSelect.value = settings.placeholderDelimiter || '%';
+    delimiterSelect.addEventListener('change', () => {
+        settings.placeholderDelimiter = delimiterSelect.value;
+        context.saveSettingsDebounced();
+    });
+    delimiterLabel.append(delimiterText, delimiterSelect);
+    inlineDrawerContent.append(delimiterLabel);
+
     // Manage replacements button
     const manageButton = document.createElement('button');
     manageButton.classList.add('menu_button');

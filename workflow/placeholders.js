@@ -1,4 +1,4 @@
-import { EXTENSION_NAME } from '../consts.js';
+import { EXTENSION_NAME, wrapPlaceholder, getPlaceholderDelimiter } from '../consts.js';
 
 /**
  * @typedef {Object} PlaceholderInfo
@@ -21,7 +21,7 @@ export function getPlaceholderOptions() {
     const rulesPlaceholders = getCurrentPlaceholders();
     const placeholderOptions = {};
     for (const [key] of Object.entries(rulesPlaceholders)) {
-        placeholderOptions[key] = `%${key}%`;
+        placeholderOptions[key] = wrapPlaceholder(key);
     }
     return placeholderOptions;
 }
@@ -51,10 +51,12 @@ export function getCurrentPlaceholders() {
         console.warn(`[${EXTENSION_NAME}]`, 'getCurrentPlaceholders: Could not find placeholder list');
         return {};
     }
+    const delimiter = getPlaceholderDelimiter();
     const placeholders = {};
     for (const placeholder of placeholderList) {
         const key = placeholder.getAttribute('data-placeholder');
-        const present = workflow?.search(`"%${key}%"`) !== -1;
+        const wrapped = wrapPlaceholder(key);
+        const present = workflow?.search(`"${wrapped}"`) !== -1;
         placeholders[key] = {
             find: key,
             value: key, // for compatibility with the replacement rule dialog
@@ -67,7 +69,8 @@ export function getCurrentPlaceholders() {
     const customPlaceholders = document.querySelectorAll('.sd_comfy_workflow_editor_placeholder_list_custom > li[data-placeholder]') || [];
     for (const placeholder of customPlaceholders) {
         const key = placeholder.getAttribute('data-placeholder');
-        const present = workflow?.search(`"%${key}%"`) !== -1;
+        const wrapped = wrapPlaceholder(key);
+        const present = workflow?.search(`"${wrapped}"`) !== -1;
         const value = placeholder.find('.text_pole sd_comfy_workflow_editor_custom_replace').value;
         placeholders[key] = {
             find: key,

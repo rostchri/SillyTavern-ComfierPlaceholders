@@ -41,17 +41,19 @@ import { injectReplacerButton } from './ui/workflowEditor.js';
  * @type {SillyTavernComfierPlaceholdersSettings}
  * @typedef {Object} SillyTavernComfierPlaceholdersSettings
  * @property {boolean} enabled Whether the extension is enabled
+ * @property {string} placeholderDelimiter Delimiter for placeholders ('%' or '*')
  * @property {Record<string,SavedVersion>} savedAs Saved versions of workflows
  * @property {ReplacementRule[]} replacements List of replacement rules
  */
 const defaultSettings = Object.freeze({
     enabled: true,
+    placeholderDelimiter: '%',
     savedAs: {
         // Example structure with new fields
         /*
         "workflow.json": {
             apiWorkflowName: "workflow.json",
-            dstWorkflowName: "workflow_with_placeholders.json", 
+            dstWorkflowName: "workflow_with_placeholders.json",
             lastUpdated: "2024-12-19T12:00:00Z",
             description: "Version with all inputs replaced by placeholders"
         }
